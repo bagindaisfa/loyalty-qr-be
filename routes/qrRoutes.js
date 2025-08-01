@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { generateQR } = require('../controllers/qrController');
+const qrController = require('../controllers/qrController');
 
-// POST /api/qr/generate
-router.post('/generate', generateQR);
+router.post('/generate', qrController.generateQR);
+router.post('/static', qrController.generateStaticQR);
 
 module.exports = router;

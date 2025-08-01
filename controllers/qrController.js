@@ -1,36 +1,33 @@
-const db = require('../models/db');
-const { v4: uuidv4 } = require('uuid');
-const QRCode = require('qrcode');
+const qrModel = require('../models/qrModel');
 
-async function generateQR(req, res) {
-  const { quantity = 1 } = req.body;
+exports.generateQR = async (req, res) => {
+  const { tenant_id, amount } = req.body;
+
+  if (!tenant_id) {
+    return res.status(400).json({ message: 'tenant_id wajib diisi.' });
+  }
 
   try {
-    const createdQRCodes = [];
-
-    for (let i = 0; i < quantity; i++) {
-      const token = uuidv4(); // bisa diganti dengan pendek (misal: nanoid atau 8 digit custom)
-      const insert = await db.query(
-        'INSERT INTO qr_codes (code) VALUES ($1) RETURNING *',
-        [token]
-      );
-
-      const qrImage = await QRCode.toDataURL(
-        `https://kedaiku.app/claim/${token}`
-      );
-      createdQRCodes.push({
-        code: insert.rows[0].code,
-        qr_image: qrImage,
-      });
-    }
-
-    res.status(201).json({ success: true, data: createdQRCodes });
+    const count = await qrModel.generateQRCodes(tenant_id, amount || 1);
+    res.json({ message: `${count} QR code berhasil dibuat.` });
   } catch (err) {
-    console.error('QR Generate Error:', err);
-    res.status(500).json({ success: false, message: 'QR generation failed' });
+    console.error(err);
+    res.status(500).json({ message: 'Gagal membuat QR code.' });
   }
-}
+};
 
-module.exports = {
-  generateQR,
+exports.generateStaticQR = async (req, res) => {
+  const { tenant_id } = req.body;
+
+  if (!tenant_id) {
+    return res.status(400).json({ message: 'tenant_id wajib diisi.' });
+  }
+
+  try {
+    const qr = await qrModel.generateStaticQR(tenant_id);
+    res.json({ message: 'QR statis berhasil diproses.', qr_code: qr.code });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Gagal membuat QR statis.' });
+  }
 };

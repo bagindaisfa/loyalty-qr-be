@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { claimPoint } = require('../controllers/claimController');
+const claimController = require('../controllers/claimController');
 
-// POST /api/claim/:code
-router.post('/:code', claimPoint);
+router.post('/:code', claimController.claimReward);
 
 module.exports = router;
