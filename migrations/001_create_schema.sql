@@ -116,3 +116,15 @@ CREATE TABLE subscriptions (
   status TEXT CHECK (status IN ('active', 'expired', 'grace')),
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- ========================
+-- 10. ADMINS
+-- ========================
+CREATE TABLE admins (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  role TEXT CHECK (role IN ('internal', 'tenant')) NOT NULL,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW()
+);

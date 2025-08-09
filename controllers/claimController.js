@@ -15,7 +15,11 @@ exports.claimReward = async (req, res) => {
 
   try {
     const result = await claimModel.handleClaim(code, name, phone);
-    res.json({ message: 'Poin berhasil diklaim!', point: result.point });
+    res.json({
+      message: 'Reward berhasil diklaim!',
+      point: result.point,
+      type: result.reward_type,
+    });
   } catch (err) {
     console.error(err);
     res

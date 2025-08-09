@@ -1,4 +1,6 @@
 const db = require('./db');
+const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 exports.getUsersByTenant = async (tenantId) => {
   const res = await db.query(
@@ -39,4 +41,40 @@ exports.getTenantRewardHistory = async (tenantId) => {
   );
 
   return res.rows;
+};
+
+exports.createTenant = async (name, tier) => {
+  await db.query('BEGIN');
+
+  const id = uuidv4();
+
+  // Insert tenant
+  await db.query(
+    `
+    INSERT INTO tenants (id, name, subscription_tier)
+    VALUES ($1, $2, $3)
+  `,
+    [id, name, tier]
+  );
+
+  // Generate QR statis
+  const qrCode = `QR-${crypto.randomBytes(4).toString('hex')}`;
+  const qrId = uuidv4();
+
+  await db.query(
+    `
+    INSERT INTO qr_codes (id, tenant_id, code, point_value)
+    VALUES ($1, $2, $3, 1)
+  `,
+    [qrId, id, qrCode]
+  );
+
+  await db.query('COMMIT');
+
+  return {
+    id,
+    name,
+    tier,
+    qr_code: qrCode,
+  };
 };
